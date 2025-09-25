@@ -1,0 +1,17 @@
+[33m324463c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m HEAD@{0}: pull --rebase origin master (finish): returning to refs/heads/master
+[33m324463c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m HEAD@{1}: pull --rebase origin master (pick): Page
+[33m29e7120[m HEAD@{2}: pull --rebase origin master (pick): CucumberTestCase
+[33m178f345[m HEAD@{3}: pull --rebase origin master (start): checkout 178f345fa51a0b47e4e0913784ce18e24be23907
+[33mb41a1b6[m HEAD@{4}: commit: Page
+[33m9f299f9[m HEAD@{5}: commit (amend): CucumberTestCase
+[33m178f345[m HEAD@{6}: rebase (finish): returning to refs/heads/master
+[33m178f345[m HEAD@{7}: rebase (start): checkout 178f345fa51a0b47e4e0913784ce18e24be23907
+[33mef313ae[m HEAD@{8}: revert: Revert "бновление проекта"
+[33m178f345[m HEAD@{9}: commit: CucumberTestCase
+[33mb9800d6[m HEAD@{10}: commit: бновление проекта
+[33m29b13ad[m HEAD@{11}: commit: CucumberTestCase
+[33mc3db10f[m HEAD@{12}: commit: CucumberTestCase
+[33mfd35aae[m HEAD@{13}: commit: обнавлен feature-файл
+[33mec6cf3b[m HEAD@{14}: commit: CucumberTestCase
+[33m78534fe[m HEAD@{15}: commit (amend): Avtotest
+[33mdb6a59c[m HEAD@{16}: commit (initial): ой коммит
