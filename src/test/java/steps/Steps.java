@@ -9,9 +9,17 @@ import org.junit.jupiter.api.Assertions;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import pages.RegistrationPage;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.time.Duration;
+import java.util.Properties;
 
 public class Steps {
 
@@ -23,12 +31,40 @@ public class Steps {
     @Допустим("Пользователь открыл форму регистрации")
     @Step("Открываем форму регистрации")
     public void открытьФорму() {
-        driver = new ChromeDriver();
-        driver.manage().window().maximize();
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
-        registrationPage = new RegistrationPage(driver);
+
+        Properties properties = new Properties();
+        try {
+            InputStream input = new FileInputStream("src/main/resources/application.properties");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String driverType = properties.getProperty("type.driver");
+        String browser = properties.getProperty("type.browser");
+        String selenoidUrl = properties.getProperty("selenoid.url");
+        if ("remote".equalsIgnoreCase(driverType)) {
+
+            DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
+            desiredCapabilities.setBrowserName(browser);
+            desiredCapabilities.setVersion("120.0");
+            desiredCapabilities.setCapability("enableVNC",true);
+            desiredCapabilities.setCapability("enableVideo",false);
+
+            try {
+                driver = new RemoteWebDriver(URI.create("selenoidUrl").toURL(), desiredCapabilities);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+
+            driver = new ChromeDriver();
+            driver.manage().window().maximize();
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+            driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
+            registrationPage = new RegistrationPage(driver);
+        }
     }
+
 
     @Когда("он вводит имя {string} и фамилию {string}")
     @Step("Вводим имя: {0}, фамилию: {1}")
