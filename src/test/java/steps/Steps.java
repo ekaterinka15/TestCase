@@ -28,57 +28,67 @@ import java.util.Properties;
 
 public class Steps {
 
-    private WebDriver driver;
-    private RegistrationPage registrationPage;
+    private static WebDriver driver;
+    private static RegistrationPage registrationPage;
 
-
+    public static WebDriver getDriver() {
+        if (driver == null) {
+            открытьФорму();
+        }
+        return driver;
+    }
 
     @Допустим("Пользователь открыл форму регистрации")
     @Step("Открываем форму регистрации")
-    public void открытьФорму() {
-
+    public static void открытьФорму() {
         Properties properties = new Properties();
         try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
             properties.load(input);
         } catch (IOException e) {
             throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
+
         String driverType = properties.getProperty("type.driver");
-        String browser = properties.getProperty("type.browser");
         String selenoidUrl = properties.getProperty("selenoid.url");
 
         if ("remote".equalsIgnoreCase(driverType)) {
             ChromeOptions options = new ChromeOptions();
-            options.addArguments("--no-sandbox");
-            options.addArguments("--disable-dev-shm-usage");
-            options.addArguments("--disable-gpu");
-            options.addArguments("--headless=new");
+            options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
+            options.setBrowserVersion("109.0");
 
-            DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
             Map<String, Object> selenoidOptions = new HashMap<>();
-            desiredCapabilities.setBrowserName("chrome");
-            desiredCapabilities.setVersion("109.0");
-            desiredCapabilities.setCapability("enableVNC",true);
-            desiredCapabilities.setCapability("enableVideo",false);
-            desiredCapabilities.setCapability("selenoid:options", selenoidOptions);
-            desiredCapabilities.setCapability(ChromeOptions.CAPABILITY, options);
-
+            selenoidOptions.put("enableVNC", true);
+            selenoidOptions.put("enableVideo", false);
+            options.setCapability("selenoid:options", selenoidOptions);
 
             try {
-                driver = new RemoteWebDriver(new URL(selenoidUrl), desiredCapabilities);
+                driver = new RemoteWebDriver(new URL(selenoidUrl), options);
             } catch (MalformedURLException e) {
                 throw new RuntimeException("Неверный URL Selenoid", e);
             }
 
         } else {
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--start-maximized");
+            driver = new ChromeDriver(options);
+        }
 
-            driver = new ChromeDriver();
-            driver.manage().window().maximize();
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-            driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
-            registrationPage = new RegistrationPage(driver);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
+        registrationPage = new RegistrationPage(driver);
+    }
+
+    public static RegistrationPage getRegistrationPage() {
+        return registrationPage;
+    }
+
+    public static void quitDriver() {
+        if (driver != null) {
+            driver.quit();
+            driver = null;
         }
     }
+
 
 
     @Когда("он вводит имя {string} и фамилию {string}")
