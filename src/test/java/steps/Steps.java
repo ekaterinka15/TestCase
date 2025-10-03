@@ -48,7 +48,7 @@ public class Steps {
             DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
             Map<String, Object> selenoidOptions = new HashMap<>();
             desiredCapabilities.setBrowserName(browser);
-            desiredCapabilities.setVersion("120.0");
+            desiredCapabilities.setVersion("109.0");
             desiredCapabilities.setCapability("enableVNC",true);
             desiredCapabilities.setCapability("enableVideo",false);
             desiredCapabilities.setCapability("selenoid:options", selenoidOptions);
