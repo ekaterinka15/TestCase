@@ -16,9 +16,11 @@ import pages.RegistrationPage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,20 +38,22 @@ public class Steps {
     public void открытьФорму() {
 
         Properties properties = new Properties();
-        try {
-            InputStream input = new FileInputStream("src/main/resources/application.properties");
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+        try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
+            properties.load(input);
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
         String driverType = properties.getProperty("type.driver");
         String browser = properties.getProperty("type.browser");
         String selenoidUrl = properties.getProperty("selenoid.url");
+
         if ("remote".equalsIgnoreCase(driverType)) {
             ChromeOptions options = new ChromeOptions();
             options.addArguments("--no-sandbox");
             options.addArguments("--disable-dev-shm-usage");
             options.addArguments("--disable-gpu");
             options.addArguments("--headless=new");
+
             DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
             Map<String, Object> selenoidOptions = new HashMap<>();
             desiredCapabilities.setBrowserName("chrome");
@@ -61,9 +65,9 @@ public class Steps {
 
 
             try {
-                driver = new RemoteWebDriver(URI.create(selenoidUrl).toURL(), desiredCapabilities);
+                driver = new RemoteWebDriver(new URL(selenoidUrl), desiredCapabilities);
             } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Неверный URL Selenoid", e);
             }
 
         } else {
