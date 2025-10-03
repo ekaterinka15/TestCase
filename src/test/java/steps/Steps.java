@@ -19,6 +19,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class Steps {
@@ -44,10 +46,12 @@ public class Steps {
         if ("remote".equalsIgnoreCase(driverType)) {
 
             DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
+            Map<String, Object> selenoidOptions = new HashMap<>();
             desiredCapabilities.setBrowserName(browser);
             desiredCapabilities.setVersion("120.0");
             desiredCapabilities.setCapability("enableVNC",true);
             desiredCapabilities.setCapability("enableVideo",false);
+            desiredCapabilities.setCapability("selenoid:options", selenoidOptions);
 
             try {
                 driver = new RemoteWebDriver(URI.create("selenoidUrl").toURL(), desiredCapabilities);
