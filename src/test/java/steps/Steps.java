@@ -57,9 +57,11 @@ public class Steps {
             desiredCapabilities.setCapability("enableVNC",true);
             desiredCapabilities.setCapability("enableVideo",false);
             desiredCapabilities.setCapability("selenoid:options", selenoidOptions);
+            desiredCapabilities.setCapability(ChromeOptions.CAPABILITY, options);
+
 
             try {
-                driver = new RemoteWebDriver(URI.create("selenoidUrl").toURL(), desiredCapabilities);
+                driver = new RemoteWebDriver(URI.create(selenoidUrl).toURL(), desiredCapabilities);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
