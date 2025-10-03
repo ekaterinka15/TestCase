@@ -52,7 +52,7 @@ public class Steps {
             options.addArguments("--headless=new");
             DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
             Map<String, Object> selenoidOptions = new HashMap<>();
-            desiredCapabilities.setBrowserName(browser);
+            desiredCapabilities.setBrowserName("chrome");
             desiredCapabilities.setVersion("109.0");
             desiredCapabilities.setCapability("enableVNC",true);
             desiredCapabilities.setCapability("enableVideo",false);
