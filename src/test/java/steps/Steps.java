@@ -47,16 +47,18 @@ public class Steps {
         } catch (IOException e) {
             throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
-        String jenkinsDriver = System.getProperty("driver");
+        String jenkinsDriver = System.getProperty("type.driver");
         String driverType = (jenkinsDriver != null && !jenkinsDriver.isEmpty())
                 ? jenkinsDriver
                 : properties.getProperty("type.driver");
         String selenoidUrl = properties.getProperty("selenoid.url");
 
 
+
+
         if ("remote".equalsIgnoreCase(driverType)) {
             ChromeOptions options = new ChromeOptions();
-            options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu");
+            options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
             options.setBrowserVersion("109.0");
 
             Map<String, Object> selenoidOptions = new HashMap<>();
