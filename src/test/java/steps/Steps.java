@@ -54,7 +54,8 @@ public class Steps {
         String selenoidUrl = properties.getProperty("selenoid.url");
 
         // Фикс ошибки netty
-        System.setProperty("webdriver.http.factory", "jdk");
+        System.setProperty("webdriver.http.factory", "apache");
+
 
         // Создание драйвера
         if ("remote".equals(driverType)) {
