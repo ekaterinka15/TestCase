@@ -2,29 +2,22 @@ package steps;
 
 
 import io.cucumber.java.After;
-
-import io.cucumber.java.ru.*;
+import io.cucumber.java.ru.Допустим;
+import io.cucumber.java.ru.И;
+import io.cucumber.java.ru.Когда;
+import io.cucumber.java.ru.Тогда;
 import io.qameta.allure.Step;
-
 import org.junit.jupiter.api.Assertions;
-
-import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.http.HttpClient;
 import pages.RegistrationPage;
 
 import java.io.FileInputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
@@ -32,7 +25,6 @@ import java.util.Map;
 import java.util.Properties;
 
 public class Steps {
-
     private static WebDriver driver;
     private static RegistrationPage registrationPage;
 
@@ -52,51 +44,38 @@ public class Steps {
         } catch (IOException e) {
             throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
-
-        String jenkinsDriver = System.getProperty("type.driver", properties.getProperty("type.driver", "local"));
-        String browser = System.getProperty("browser", properties.getProperty("browser", "chrome")).toLowerCase();
+        String jenkinsDriver = System.getProperty("type.driver");
+        String driverType = (jenkinsDriver != null && !jenkinsDriver.isEmpty()) ? jenkinsDriver : properties.getProperty("type.driver");
         String selenoidUrl = properties.getProperty("selenoid.url");
+        String browser = System.getProperty("browser", properties.getProperty("browser", "chrome")).toLowerCase();
 
-        if ("remote".equalsIgnoreCase(jenkinsDriver)) {
-            MutableCapabilities options;
-
-            if ("firefox".equals(browser)) {
-                FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.setBrowserVersion("118.0");
-                firefoxOptions.addArguments("--headless");
-                firefoxOptions.setCapability("selenoid:options", Map.of("enableVNC", true, "enableVideo", false));
-                options = firefoxOptions;
-            } else {
-                ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.setBrowserVersion("109.0");
-                chromeOptions.addArguments("--headless=new");
-                chromeOptions.setCapability("selenoid:options", Map.of("enableVNC", true, "enableVideo", false));
-                options = chromeOptions;
-            }
+        if ("remote".equalsIgnoreCase(driverType)) {
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
+            options.setBrowserVersion("109.0");
+            Map<String, Object> selenoidOptions = new HashMap<>();
+            selenoidOptions.put("enableVNC", true);
+            selenoidOptions.put("enableVideo", false);
+            options.setCapability("selenoid:options", selenoidOptions);
 
             try {
                 driver = new RemoteWebDriver(new URL(selenoidUrl), options);
             } catch (MalformedURLException e) {
                 throw new RuntimeException("Неверный URL Selenoid", e);
             }
-
         } else {
-            if ("firefox".equals(browser)) {
-                FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.addArguments("--start-maximized");
-                driver = new FirefoxDriver(firefoxOptions);
-            } else {
-                ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("--start-maximized");
-                driver = new ChromeDriver(chromeOptions);
-            }
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--start-maximized");
+            driver = new ChromeDriver(options);
         }
-
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
         registrationPage = new RegistrationPage(driver);
     }
 
+    public static RegistrationPage getRegistrationPage() {
+        return registrationPage;
+    }
 
     public static void quitDriver() {
         if (driver != null) {
@@ -104,7 +83,6 @@ public class Steps {
             driver = null;
         }
     }
-
 
 
     @Когда("он вводит имя {string} и фамилию {string}")
@@ -122,12 +100,14 @@ public class Steps {
         registrationPage.enterEmail(email);
         Assertions.assertEquals(email, registrationPage.getEmailInput().getAttribute("value"));
     }
+
     @И("он вводит уникальный email")
     @Step("Введён email: {string}")
     public void вводУникальногоEmail() {
         String email = "user" + System.currentTimeMillis() + "@test.ru";
         registrationPage.enterEmail(email);
     }
+
     @И("он вводит пароль {string}")
     @Step("Вводим пароль: {0}")
     public void вводПароля(String password) {
@@ -148,6 +128,7 @@ public class Steps {
         registrationPage.setPrivacyPolicy(true);
         Assertions.assertTrue(registrationPage.getPrivacyToggle().isSelected());
     }
+
     @И("он не соглашается с политикой конфиденциальности")
     @Step
     public void отключитьПолитику() {
@@ -169,6 +150,7 @@ public class Steps {
         Assertions.assertTrue(registrationPage.alertContains("E-Mail уже зарегистрирован")
                 || registrationPage.alertContains("уже существует"));
     }
+
     @Тогда("не появляется сообщение об ошибке {string}")
     public void ошибкаНеПоявляется(String текст) {
         Assertions.assertFalse(registrationPage.alertContains(текст),
@@ -188,6 +170,7 @@ public class Steps {
         Assertions.assertTrue(driver.getCurrentUrl().contains("register"));
 
     }
+
     @Тогда("появляется ошибка о длине пароля")
     @Step("Проверка ошибки на длину пароля")
     public void ошибкаДлиныПароля() {
@@ -198,6 +181,7 @@ public class Steps {
                     "Ошибка: пароль имеет ограничение от 4 до 20 символов");
         }
     }
+
     @Тогда("не появляется ошибка о длине пароля")
     @Step("Проверка отсутствия ошибки на длину пароля")
     public void ошибкаДлиныПароляНеПоявилась() {
