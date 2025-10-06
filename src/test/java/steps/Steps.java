@@ -106,12 +106,14 @@ public class Steps {
         switch (browser) {
             case "chrome":
                 ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("--start-maximized");
+                chromeOptions.addArguments("window-size=1920,1080");
+
                 return new ChromeDriver(chromeOptions);
 
             case "firefox":
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.addArguments("--start-maximized");
+                firefoxOptions.addArguments("window-size=1920,1080");
+
                 return new FirefoxDriver(firefoxOptions);
 
             default:
