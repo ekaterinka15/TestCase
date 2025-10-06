@@ -82,7 +82,7 @@ public class Steps {
                 chromeOptions.setCapability("selenoid:options", Map.of("enableVNC", true, "enableVideo", false));
                 options = chromeOptions;
             }
-            HttpClient.Factory clientFactory = HttpClient.Factory.createDefault();
+
             try {
                 driver = new RemoteWebDriver(new URL(selenoidUrl), options);
             } catch (MalformedURLException e) {
