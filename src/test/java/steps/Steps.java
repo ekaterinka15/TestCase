@@ -53,27 +53,18 @@ public class Steps {
             throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
 
-        String jenkinsDriver = System.getProperty("type.driver");
-        String driverType = (jenkinsDriver != null && !jenkinsDriver.isEmpty())
-                ? jenkinsDriver
-                : properties.getProperty("type.driver");
+        String jenkinsDriver = System.getProperty("type.driver", properties.getProperty("type.driver", "local"));
+        String browser = System.getProperty("browser", properties.getProperty("browser", "chrome")).toLowerCase();
         String selenoidUrl = properties.getProperty("selenoid.url");
 
-        String browser = System.getProperty("browser", properties.getProperty("browser", "firefox")).toLowerCase();
-
-        if ("remote".equalsIgnoreCase(driverType)) {
+        if ("remote".equalsIgnoreCase(jenkinsDriver)) {
             MutableCapabilities options;
 
             if ("firefox".equals(browser)) {
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.setBrowserVersion("109.0");
+                firefoxOptions.setBrowserVersion("118.0");
                 firefoxOptions.addArguments("--headless");
-
-                Map<String, Object> selenoidOptions = new HashMap<>();
-                selenoidOptions.put("enableVNC", true);
-                selenoidOptions.put("enableVideo", false);
-                firefoxOptions.setCapability("selenoid:options", selenoidOptions);
-
+                firefoxOptions.setCapability("selenoid:options", Map.of("enableVNC", true, "enableVideo", false));
                 options = firefoxOptions;
             } else {
                 ChromeOptions chromeOptions = new ChromeOptions();
@@ -105,6 +96,7 @@ public class Steps {
         driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
         registrationPage = new RegistrationPage(driver);
     }
+
 
     public static void quitDriver() {
         if (driver != null) {
