@@ -90,7 +90,7 @@ public class Steps {
                 case "firefox":
                     FirefoxOptions firefoxOptions = new FirefoxOptions();
                     firefoxOptions.addArguments("--headless");
-                    firefoxOptions.setBrowserVersion("118.0");
+                    firefoxOptions.setBrowserVersion("109.0");
                     firefoxOptions.setCapability("selenoid:options", selenoidOptions);
                     return new RemoteWebDriver(new URL(selenoidUrl), firefoxOptions);
 
