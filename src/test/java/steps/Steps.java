@@ -1,5 +1,6 @@
 package steps;
 
+
 import io.cucumber.java.After;
 
 import io.cucumber.java.ru.*;
@@ -7,19 +8,22 @@ import io.qameta.allure.Step;
 
 import org.junit.jupiter.api.Assertions;
 
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+
 import org.openqa.selenium.remote.RemoteWebDriver;
 import pages.RegistrationPage;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
+
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
@@ -47,24 +51,36 @@ public class Steps {
         } catch (IOException e) {
             throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
+
         String jenkinsDriver = System.getProperty("type.driver");
         String driverType = (jenkinsDriver != null && !jenkinsDriver.isEmpty())
                 ? jenkinsDriver
                 : properties.getProperty("type.driver");
         String selenoidUrl = properties.getProperty("selenoid.url");
 
-
-
+        String browser = System.getProperty("browser", properties.getProperty("browser", "firefox")).toLowerCase();
 
         if ("remote".equalsIgnoreCase(driverType)) {
-            ChromeOptions options = new ChromeOptions();
-            options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
-            options.setBrowserVersion("109.0");
+            MutableCapabilities options;
 
-            Map<String, Object> selenoidOptions = new HashMap<>();
-            selenoidOptions.put("enableVNC", true);
-            selenoidOptions.put("enableVideo", false);
-            options.setCapability("selenoid:options", selenoidOptions);
+            if ("firefox".equals(browser)) {
+                FirefoxOptions firefoxOptions = new FirefoxOptions();
+                firefoxOptions.setBrowserVersion("109.0");
+                firefoxOptions.addArguments("--headless");
+
+                Map<String, Object> selenoidOptions = new HashMap<>();
+                selenoidOptions.put("enableVNC", true);
+                selenoidOptions.put("enableVideo", false);
+                firefoxOptions.setCapability("selenoid:options", selenoidOptions);
+
+                options = firefoxOptions;
+            } else {
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.setBrowserVersion("109.0");
+                chromeOptions.addArguments("--headless=new");
+                chromeOptions.setCapability("selenoid:options", Map.of("enableVNC", true, "enableVideo", false));
+                options = chromeOptions;
+            }
 
             try {
                 driver = new RemoteWebDriver(new URL(selenoidUrl), options);
@@ -73,18 +89,20 @@ public class Steps {
             }
 
         } else {
-            ChromeOptions options = new ChromeOptions();
-            options.addArguments("--start-maximized");
-            driver = new ChromeDriver(options);
+            if ("firefox".equals(browser)) {
+                FirefoxOptions firefoxOptions = new FirefoxOptions();
+                firefoxOptions.addArguments("--start-maximized");
+                driver = new FirefoxDriver(firefoxOptions);
+            } else {
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.addArguments("--start-maximized");
+                driver = new ChromeDriver(chromeOptions);
+            }
         }
 
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
         registrationPage = new RegistrationPage(driver);
-    }
-
-    public static RegistrationPage getRegistrationPage() {
-        return registrationPage;
     }
 
     public static void quitDriver() {
