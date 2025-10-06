@@ -58,20 +58,19 @@ public class Steps {
 
 
 
-        driver = createDriver(driverType, browser, selenoidUrl);
+        // Создание драйвера
+        if ("remote".equals(driverType)) {
+            driver = createRemoteDriver(browser, selenoidUrl);
+        } else {
+            driver = createLocalDriver(browser);
+        }
 
+        // Открытие формы регистрации
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
 
+        // Инициализация страницы
         registrationPage = new RegistrationPage(driver);
-    }
-
-    private static WebDriver createDriver(String driverType, String browser, String selenoidUrl) {
-        if ("remote".equals(driverType)) {
-            return createRemoteDriver(browser, selenoidUrl);
-        } else {
-            return createLocalDriver(browser);
-        }
     }
 
     private static WebDriver createRemoteDriver(String browser, String selenoidUrl) {
@@ -83,26 +82,14 @@ public class Steps {
             switch (browser) {
                 case "chrome":
                     ChromeOptions chromeOptions = new ChromeOptions();
-                    chromeOptions.addArguments(
-                            "--headless=new",
-                            "--no-sandbox",
-                            "--disable-dev-shm-usage",
-                            "--disable-gpu",
-                            "--disable-extensions",
-                            "--remote-debugging-port=9222",
-                            "--window-size=1920,1080"
-                    );
+                    chromeOptions.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
                     chromeOptions.setBrowserVersion("109.0");
                     chromeOptions.setCapability("selenoid:options", selenoidOptions);
                     return new RemoteWebDriver(new URL(selenoidUrl), chromeOptions);
 
                 case "firefox":
                     FirefoxOptions firefoxOptions = new FirefoxOptions();
-                    firefoxOptions.addArguments(
-                            "--headless",
-                            "--width=1920",
-                            "--height=1080"
-                    );
+                    firefoxOptions.addArguments("--headless");
                     firefoxOptions.setBrowserVersion("109.0");
                     firefoxOptions.setCapability("selenoid:options", selenoidOptions);
                     return new RemoteWebDriver(new URL(selenoidUrl), firefoxOptions);
@@ -120,13 +107,13 @@ public class Steps {
             case "chrome":
                 ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments("window-size=1920,1080");
-                // Если нужно, добавь сюда:
-                // chromeOptions.addArguments("--remote-allow-origins=*");
+
                 return new ChromeDriver(chromeOptions);
 
             case "firefox":
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
                 firefoxOptions.addArguments("window-size=1920,1080");
+
                 return new FirefoxDriver(firefoxOptions);
 
             default:
