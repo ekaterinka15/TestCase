@@ -183,7 +183,12 @@
             <version>4.34.0</version>
         </dependency>
 
-
+        <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-remote-driver -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>4.34.0</version>
+        </dependency>
 
     </dependencies>
 
