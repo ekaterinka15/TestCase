@@ -82,14 +82,23 @@ public class Steps {
             switch (browser) {
                 case "chrome":
                     ChromeOptions chromeOptions = new ChromeOptions();
-                    chromeOptions.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
+                    chromeOptions.addArguments(
+                            "--no-sandbox",
+                            "--disable-dev-shm-usage",
+                            "--disable-gpu",
+                            "--headless=new",
+                            "window-size=1920,1080");
                     chromeOptions.setBrowserVersion("109.0");
                     chromeOptions.setCapability("selenoid:options", selenoidOptions);
                     return new RemoteWebDriver(new URL(selenoidUrl), chromeOptions);
 
                 case "firefox":
                     FirefoxOptions firefoxOptions = new FirefoxOptions();
-                    firefoxOptions.addArguments("--headless");
+                    firefoxOptions.addArguments(
+                            "--headless",
+                            "--width=1920",
+                            "--height=1080"
+                    );
                     firefoxOptions.setBrowserVersion("109.0");
                     firefoxOptions.setCapability("selenoid:options", selenoidOptions);
                     return new RemoteWebDriver(new URL(selenoidUrl), firefoxOptions);
