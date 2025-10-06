@@ -8,9 +8,12 @@ import io.cucumber.java.ru.Когда;
 import io.cucumber.java.ru.Тогда;
 import io.qameta.allure.Step;
 import org.junit.jupiter.api.Assertions;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import pages.RegistrationPage;
 
@@ -44,44 +47,63 @@ public class Steps {
         } catch (IOException e) {
             throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
+
         String jenkinsDriver = System.getProperty("type.driver");
         String driverType = (jenkinsDriver != null && !jenkinsDriver.isEmpty()) ? jenkinsDriver : properties.getProperty("type.driver");
         String selenoidUrl = properties.getProperty("selenoid.url");
         String browser = System.getProperty("browser", properties.getProperty("browser", "chrome")).toLowerCase();
 
         if ("remote".equalsIgnoreCase(driverType)) {
-            ChromeOptions options = new ChromeOptions();
-            options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
-            options.setBrowserVersion("109.0");
-            Map<String, Object> selenoidOptions = new HashMap<>();
-            selenoidOptions.put("enableVNC", true);
-            selenoidOptions.put("enableVideo", false);
-            options.setCapability("selenoid:options", selenoidOptions);
+            MutableCapabilities options;
+            switch (browser) {
+                case "firefox":
+                    FirefoxOptions firefoxOptions = new FirefoxOptions();
+                    firefoxOptions.setBrowserVersion("109.0");
+                    firefoxOptions.addArguments("--headless");
+                    Map<String, Object> firefoxSelenoidOptions = new HashMap<>();
+                    firefoxSelenoidOptions.put("enableVNC", true);
+                    firefoxSelenoidOptions.put("enableVideo", false);
+                    firefoxOptions.setCapability("selenoid:options", firefoxSelenoidOptions);
+                    options = firefoxOptions;
+                    break;
+                case "chrome":
+                default:
+                    ChromeOptions chromeOptions = new ChromeOptions();
+                    chromeOptions.setBrowserVersion("109.0");
+                    chromeOptions.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
+                    Map<String, Object> chromeSelenoidOptions = new HashMap<>();
+                    chromeSelenoidOptions.put("enableVNC", true);
+                    chromeSelenoidOptions.put("enableVideo", false);
+                    chromeOptions.setCapability("selenoid:options", chromeSelenoidOptions);
+                    options = chromeOptions;
+                    break;
+            }
 
             try {
                 driver = new RemoteWebDriver(new URL(selenoidUrl), options);
             } catch (MalformedURLException e) {
                 throw new RuntimeException("Неверный URL Selenoid", e);
             }
+
         } else {
-            ChromeOptions options = new ChromeOptions();
-            options.addArguments("--start-maximized");
-            driver = new ChromeDriver(options);
+            switch (browser) {
+                case "firefox":
+                    FirefoxOptions firefoxOptions = new FirefoxOptions();
+                    firefoxOptions.addArguments("--start-maximized");
+                    driver = new FirefoxDriver(firefoxOptions);
+                    break;
+                case "chrome":
+                default:
+                    ChromeOptions chromeOptions = new ChromeOptions();
+                    chromeOptions.addArguments("--start-maximized");
+                    driver = new ChromeDriver(chromeOptions);
+                    break;
+            }
         }
+
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
         registrationPage = new RegistrationPage(driver);
-    }
-
-    public static RegistrationPage getRegistrationPage() {
-        return registrationPage;
-    }
-
-    public static void quitDriver() {
-        if (driver != null) {
-            driver.quit();
-            driver = null;
-        }
     }
 
 
