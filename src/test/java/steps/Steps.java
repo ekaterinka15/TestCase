@@ -16,6 +16,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.http.HttpClient;
 import pages.RegistrationPage;
 
 import java.io.FileInputStream;
@@ -81,7 +82,7 @@ public class Steps {
                 chromeOptions.setCapability("selenoid:options", Map.of("enableVNC", true, "enableVideo", false));
                 options = chromeOptions;
             }
-
+            HttpClient.Factory clientFactory = HttpClient.Factory.createDefault();
             try {
                 driver = new RemoteWebDriver(new URL(selenoidUrl), options);
             } catch (MalformedURLException e) {
