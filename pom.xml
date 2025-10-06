@@ -106,11 +106,7 @@
             <artifactId>jna</artifactId>
             <version>5.13.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-http-jdk-client</artifactId>
-            <version>4.13.0</version>
-        </dependency>
+
 
 
         <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
