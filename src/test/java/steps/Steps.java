@@ -8,7 +8,6 @@ import io.cucumber.java.ru.Когда;
 import io.cucumber.java.ru.Тогда;
 import io.qameta.allure.Step;
 import org.junit.jupiter.api.Assertions;
-import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -41,6 +40,7 @@ public class Steps {
     @Допустим("Пользователь открыл форму регистрации")
     @Step("Открываем форму регистрации")
     public static void открытьФорму() {
+        // Загружаем настройки
         Properties properties = new Properties();
         try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
             properties.load(input);
@@ -48,63 +48,86 @@ public class Steps {
             throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
 
-        String jenkinsDriver = System.getProperty("type.driver");
-        String driverType = (jenkinsDriver != null && !jenkinsDriver.isEmpty()) ? jenkinsDriver : properties.getProperty("type.driver");
-        String selenoidUrl = properties.getProperty("selenoid.url");
+        // Получаем параметры
+        String driverType = System.getProperty("type.driver", properties.getProperty("type.driver", "local")).toLowerCase();
         String browser = System.getProperty("browser", properties.getProperty("browser", "chrome")).toLowerCase();
+        String selenoidUrl = properties.getProperty("selenoid.url");
 
-        if ("remote".equalsIgnoreCase(driverType)) {
-            MutableCapabilities options;
-            switch (browser) {
-                case "firefox":
-                    FirefoxOptions firefoxOptions = new FirefoxOptions();
-                    firefoxOptions.setBrowserVersion("109.0");
-                    firefoxOptions.addArguments("--headless");
-                    Map<String, Object> firefoxSelenoidOptions = new HashMap<>();
-                    firefoxSelenoidOptions.put("enableVNC", true);
-                    firefoxSelenoidOptions.put("enableVideo", false);
-                    firefoxOptions.setCapability("selenoid:options", firefoxSelenoidOptions);
-                    options = firefoxOptions;
-                    break;
-                case "chrome":
-                default:
-                    ChromeOptions chromeOptions = new ChromeOptions();
-                    chromeOptions.setBrowserVersion("109.0");
-                    chromeOptions.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
-                    Map<String, Object> chromeSelenoidOptions = new HashMap<>();
-                    chromeSelenoidOptions.put("enableVNC", true);
-                    chromeSelenoidOptions.put("enableVideo", false);
-                    chromeOptions.setCapability("selenoid:options", chromeSelenoidOptions);
-                    options = chromeOptions;
-                    break;
-            }
+        // Фикс ошибки netty
+        System.setProperty("webdriver.http.factory", "jdk");
 
-            try {
-                driver = new RemoteWebDriver(new URL(selenoidUrl), options);
-            } catch (MalformedURLException e) {
-                throw new RuntimeException("Неверный URL Selenoid", e);
-            }
-
+        // Создание драйвера
+        if ("remote".equals(driverType)) {
+            driver = createRemoteDriver(browser, selenoidUrl);
         } else {
-            switch (browser) {
-                case "firefox":
-                    FirefoxOptions firefoxOptions = new FirefoxOptions();
-                    firefoxOptions.addArguments("--start-maximized");
-                    driver = new FirefoxDriver(firefoxOptions);
-                    break;
-                case "chrome":
-                default:
-                    ChromeOptions chromeOptions = new ChromeOptions();
-                    chromeOptions.addArguments("--start-maximized");
-                    driver = new ChromeDriver(chromeOptions);
-                    break;
-            }
+            driver = createLocalDriver(browser);
         }
 
+        // Открытие формы регистрации
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
+
+        // Инициализация страницы
         registrationPage = new RegistrationPage(driver);
     }
+
+    private static WebDriver createRemoteDriver(String browser, String selenoidUrl) {
+        Map<String, Object> selenoidOptions = new HashMap<>();
+        selenoidOptions.put("enableVNC", true);
+        selenoidOptions.put("enableVideo", false);
+
+        try {
+            switch (browser) {
+                case "chrome":
+                    ChromeOptions chromeOptions = new ChromeOptions();
+                    chromeOptions.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
+                    chromeOptions.setBrowserVersion("109.0");
+                    chromeOptions.setCapability("selenoid:options", selenoidOptions);
+                    return new RemoteWebDriver(new URL(selenoidUrl), chromeOptions);
+
+                case "firefox":
+                    FirefoxOptions firefoxOptions = new FirefoxOptions();
+                    firefoxOptions.addArguments("--headless");
+                    firefoxOptions.setBrowserVersion("118.0");
+                    firefoxOptions.setCapability("selenoid:options", selenoidOptions);
+                    return new RemoteWebDriver(new URL(selenoidUrl), firefoxOptions);
+
+                default:
+                    throw new RuntimeException("Неизвестный браузер: " + browser);
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Неверный URL Selenoid", e);
+        }
+    }
+
+    private static WebDriver createLocalDriver(String browser) {
+        switch (browser) {
+            case "chrome":
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.addArguments("--start-maximized");
+                return new ChromeDriver(chromeOptions);
+
+            case "firefox":
+                FirefoxOptions firefoxOptions = new FirefoxOptions();
+                firefoxOptions.addArguments("--start-maximized");
+                return new FirefoxDriver(firefoxOptions);
+
+            default:
+                throw new RuntimeException("Неизвестный локальный браузер: " + browser);
+        }
+    }
+
+    public static RegistrationPage getRegistrationPage() {
+        return registrationPage;
+    }
+
+    public static void quitDriver() {
+        if (driver != null) {
+            driver.quit();
+            driver = null;
+        }
+    }
+
 
 
     @Когда("он вводит имя {string} и фамилию {string}")
