@@ -83,7 +83,7 @@ public class Steps {
                 case "chrome":
                     ChromeOptions chromeOptions = new ChromeOptions();
                     chromeOptions.addArguments(
-                            "--headless=new",
+                            "--headless",
                             "--no-sandbox",
                             "--disable-dev-shm-usage",
                             "--disable-gpu",
@@ -121,7 +121,7 @@ public class Steps {
             case "chrome":
                 ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments(
-                        "--headless=new",
+                        "--headless",
                         "--no-sandbox",
                         "--disable-dev-shm-usage",
                         "--disable-gpu",
