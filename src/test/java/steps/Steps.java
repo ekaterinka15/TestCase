@@ -90,8 +90,10 @@ public class Steps {
                             "--window-size=1920,1080"
                     );
 
-                    chromeOptions.setBrowserVersion("109.0");
+                    //chromeOptions.setBrowserVersion("109.0");
                     chromeOptions.setCapability("selenoid:options", selenoidOptions);
+                    System.out.println("Chrome args: " + chromeOptions.asMap());
+
                     return new RemoteWebDriver(new URL(selenoidUrl), chromeOptions);
 
                 case "firefox":
@@ -103,6 +105,7 @@ public class Steps {
                     );
                     firefoxOptions.setBrowserVersion("109.0");
                     firefoxOptions.setCapability("selenoid:options", selenoidOptions);
+
                     return new RemoteWebDriver(new URL(selenoidUrl), firefoxOptions);
 
                 default:
