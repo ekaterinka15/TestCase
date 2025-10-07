@@ -40,7 +40,6 @@ public class Steps {
     @Допустим("Пользователь открыл форму регистрации")
     @Step("Открываем форму регистрации")
     public static void открытьФорму() {
-        // Загружаем настройки
         Properties properties = new Properties();
         try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
             properties.load(input);
@@ -48,81 +47,41 @@ public class Steps {
             throw new RuntimeException("Не удалось загрузить application.properties", e);
         }
 
-        // Получаем параметры
         String jenkinsDriver = System.getProperty("type.driver");
         String driverType = (jenkinsDriver != null && !jenkinsDriver.isEmpty())
                 ? jenkinsDriver
                 : properties.getProperty("type.driver");
-
-        String browser = System.getProperty("browser", properties.getProperty("browser", "chrome")).toLowerCase();
         String selenoidUrl = properties.getProperty("selenoid.url");
 
-        // Фикс ошибки netty
-        System.setProperty("webdriver.http.factory", "jdk-http-client");
 
 
 
-        // Создание драйвера
-        if ("remote".equals(driverType)) {
-            driver = createRemoteDriver(browser, selenoidUrl);
+        if ("remote".equalsIgnoreCase(driverType)) {
+            ChromeOptions options = new ChromeOptions();
+
+            options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
+            options.setBrowserVersion("109.0");
+
+            Map<String, Object> selenoidOptions = new HashMap<>();
+            selenoidOptions.put("enableVNC", true);
+            selenoidOptions.put("enableVideo", false);
+            options.setCapability("selenoid:options", selenoidOptions);
+
+            try {
+                driver = new RemoteWebDriver(new URL(selenoidUrl), options);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException("Неверный URL Selenoid", e);
+            }
+
         } else {
-            driver = createLocalDriver(browser);
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--start-maximized");
+            driver = new ChromeDriver(options);
         }
 
-        // Открытие формы регистрации
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("http://217.74.37.176/?route=account/register&language=ru-ru");
-
-        // Инициализация страницы
         registrationPage = new RegistrationPage(driver);
-    }
-
-    private static WebDriver createRemoteDriver(String browser, String selenoidUrl) {
-        Map<String, Object> selenoidOptions = new HashMap<>();
-        selenoidOptions.put("enableVNC", true);
-        selenoidOptions.put("enableVideo", false);
-
-        try {
-            switch (browser) {
-                case "chrome":
-                    ChromeOptions chromeOptions = new ChromeOptions();
-                    chromeOptions.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--headless=new");
-                    chromeOptions.setBrowserVersion("109.0");
-                    chromeOptions.setCapability("selenoid:options", selenoidOptions);
-                    return new RemoteWebDriver(new URL(selenoidUrl), chromeOptions);
-
-                case "firefox":
-                    FirefoxOptions firefoxOptions = new FirefoxOptions();
-                    firefoxOptions.addArguments("--headless");
-                    firefoxOptions.setBrowserVersion("109.0");
-                    firefoxOptions.setCapability("selenoid:options", selenoidOptions);
-                    return new RemoteWebDriver(new URL(selenoidUrl), firefoxOptions);
-
-                default:
-                    throw new RuntimeException("Неизвестный браузер: " + browser);
-            }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Неверный URL Selenoid", e);
-        }
-    }
-
-    private static WebDriver createLocalDriver(String browser) {
-        switch (browser) {
-            case "chrome":
-                ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("window-size=1920,1080");
-
-                return new ChromeDriver(chromeOptions);
-
-            case "firefox":
-                FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.addArguments("window-size=1920,1080");
-
-                return new FirefoxDriver(firefoxOptions);
-
-            default:
-                throw new RuntimeException("Неизвестный локальный браузер: " + browser);
-        }
     }
 
     public static RegistrationPage getRegistrationPage() {
