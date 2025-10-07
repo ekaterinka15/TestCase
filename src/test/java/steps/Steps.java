@@ -92,7 +92,7 @@ public class Steps {
 
                     //chromeOptions.setBrowserVersion("109.0");
                     chromeOptions.setCapability("selenoid:options", selenoidOptions);
-                    System.out.println("Chrome args: " + chromeOptions.asMap());
+
 
                     return new RemoteWebDriver(new URL(selenoidUrl), chromeOptions);
 
@@ -120,13 +120,23 @@ public class Steps {
         switch (browser) {
             case "chrome":
                 ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("window-size=1920,1080");
+                chromeOptions.addArguments(
+                        "--headless=new",
+                        "--no-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--disable-gpu",
+                        "--window-size=1920,1080"
+                );
 
                 return new ChromeDriver(chromeOptions);
 
             case "firefox":
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.addArguments("window-size=1920,1080");
+                firefoxOptions.addArguments(
+                        "--headless",
+                        "--width=1920",
+                        "--height=1080"
+                );
 
                 return new FirefoxDriver(firefoxOptions);
 
