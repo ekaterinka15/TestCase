@@ -49,7 +49,11 @@ public class Steps {
         }
 
         // Получаем параметры
-        String driverType = System.getProperty("type.driver", properties.getProperty("type.driver", "local")).toLowerCase();
+        String jenkinsDriver = System.getProperty("type.driver");
+        String driverType = (jenkinsDriver != null && !jenkinsDriver.isEmpty())
+                ? jenkinsDriver
+                : properties.getProperty("type.driver");
+
         String browser = System.getProperty("browser", properties.getProperty("browser", "chrome")).toLowerCase();
         String selenoidUrl = properties.getProperty("selenoid.url");
 
